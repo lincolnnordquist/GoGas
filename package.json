@@ -1,0 +1,31 @@
+{
+  "name": "go-gas-project",
+  "version": "1.0.0",
+  "description": "GoGas Web App - Code School 2022\r Google Sheets - https://docs.google.com/spreadsheets/d/1ypLZfXMAz55n5jVbI7SIj4TZnvUnH1czUPOlcPXRNeQ/edit?usp=sharing",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/d00434525/GoGas.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/d00434525/GoGas/issues"
+  },
+  "homepage": "https://github.com/d00434525/GoGas#readme",
+  "dependencies": {
+    "bcrypt": "^5.0.1",
+    "dotenv": "^16.0.1",
+    "express": "^4.18.1",
+    "express-session": "^1.17.3",
+    "mongoose": "^6.4.4",
+    "packages": "^0.0.8",
+    "passport": "^0.6.0",
+    "passport-local": "^1.0.0",
+    "vuetify": "^2.6.7"
+  }
+}

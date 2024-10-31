@@ -1,0 +1,189 @@
+/* ======================= CSS RESET ========================================= */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Lato', sans-serif;
+}
+
+/* ========================= V-Cloak Implementation =====================*/
+[v-cloak] {
+    display: none;
+}
+
+/* ===================== VARIABLES AND GLOBAL STYLES ================================ */
+:root {
+    --nav-color: #4F4789;
+    --gray-color: #D9D9D9;
+    --orange-color: #FFB17A;
+    --yellow-color: yellow;
+    --input-color: #FFFFFF;
+}
+img {
+    cursor: pointer;
+}
+
+.input_style {
+    width: 800px;
+    height: 50px;
+    border-radius: 15px;
+    border: none;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: var(--input-color);
+    font-size: 25px;
+    text-align: center;
+}
+
+.input_style:focus {
+    outline-color: var(--orange-color);
+}
+
+.button_style {
+    width: 300;
+    height: 50px;
+    border-radius: 15px;
+    border: none;
+    padding: 10px;
+    margin-bottom: 10px;
+    background-color: var(--orange-color);
+    font-size: 25px;
+    font-weight: 600;
+    text-align: center;
+    transition: 0.5s;
+}
+
+.button_style:hover {
+    box-shadow: 0px 5px 0px black;
+}
+
+/* ======== HOME DIALOG ======= */
+#home_dialog {
+    /* background-color: var(--gray-color); */
+    width: 600px;
+    height: 100%;
+    /* border-radius: 0px 0px 50px 50px; */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#home_dialog h1 {
+    font-size: 50px;
+    color: white;
+    margin: 20px 0px;
+}
+#home_dialog .input_style {
+    width: 600px;
+}
+
+
+/* ====================== REGISTER PAGE ============================= */
+#register_dialog {
+    width: 600%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#register_dialog h1 {
+    font-size: 50px;
+    color: white;
+    margin: 20px 0px;
+}
+
+#register_header img {
+    padding: 20px;
+    width: 100%;
+    height: 150px;
+}
+
+
+
+
+
+/* ============================ LOGIN PAGE ============================ */
+#login_dialog {
+    width: 600px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+
+#login_dialog h1{
+    font-size: 50px;
+    color: white;
+    margin: 20px 0px;
+}
+
+
+
+/* ========= MAIN PAGE ======= */
+
+#column {
+    flex: 0 0 30%;
+    max-width: 100%;
+}
+#main_header img {
+    width: 175px;
+    transition: 1s;
+}
+#main_header img:hover {
+    width: 190px;
+}
+
+
+/* ============ SINGLE STATION PAGE ============ */
+#review_username {
+    font-size: 1.5rem;
+    color: black;
+}
+
+#review_comment {
+    font-size: 1rem;
+    color: black;
+}
+
+#recent_price {
+    font-size: 1.5rem;
+    color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#recent_price_user {
+    font-size: 1rem;
+    font-weight: bold;
+    color: black;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.actual_price {
+    color: var(--orange-color);
+}
+
+.nav_buttons {
+    display: flex;
+    position: fixed;
+    right: 0px;
+}
+
+#current_station_dialog_header {
+    color: var(--nav-color);
+    width: 100%;
+}
+
+/* ========= Gas Station Logo ========= */
+
+.v-avatar {
+    border: 3px solid #4F4789;
+    padding: 30px;
+}

@@ -1,0 +1,1196 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Vuetify -->
+    <link rel="stylesheet" href="style.css" />
+    <link
+      href="https://fonts.googleapis.com/css?family=Roboto:100,300,400,500,700,900"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/@mdi/font@6.x/css/materialdesignicons.min.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.min.css"
+      rel="stylesheet"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Lato:ital,wght@0,100;0,300;0,400;0,700;1,300&family=Montserrat:wght@100;300;400;600;700&display=swap"
+      rel="stylesheet"
+    />
+
+    <title>Go Gas</title>
+    <link rel="icon" type="image/x-icon" href="./images/gogasicon.png" />
+  </head>
+
+  <body>
+    <div id="app" v-cloak>
+      <!-- HOME PAGE -->
+      <div id="home_page" v-show="page == 'home'">
+        <h1>Welcome to Go Gas</h1>
+        <button v-on:click="page = 'register'">Register</button>
+        <button v-on:click="page = 'signIn'">Sign In</button>
+        <button @click="page = 'main', guest = true">Continue as Guest</button>
+      </div>
+
+      <!-- MAIN PAGE -->
+      <v-app id="inspire" v-show="page == 'main'">
+        <v-app-bar app color="#4F4789" flat elevation="4">
+          <div id="main_header">
+            <img
+              v-on:click="page = 'main'"
+              src="./images/gogaslogo.svg"
+              alt="Go Gas Logo"
+              width="175px"
+            />
+          </div>
+          <v-row v-if="guest == false" class="text-center justify-center mr-15">
+            <h2 class="white--text">Welcome, &nbsp {{ userName }}</h2>
+          </v-row>
+          <div class="nav_buttons">
+            <template v-if="guest == true && dialogScreen == 'main'">
+              <div class="text-center">
+                <v-btn
+                  color="#FFB17A"
+                  class="ma-4 black--text fs-100"
+                  v-on:click="dialogScreen = 'register'; dialog = true;"
+                  v-bind:style=" {fontSize: '20px'}"
+                >
+                  Register
+                  <v-icon right dark> mdi-login-variant </v-icon>
+                </v-btn>
+              </div>
+            </template>
+            <template v-if="guest == true && dialogScreen == 'main'">
+              <div class="text-center">
+                <v-btn
+                  color="#FFB17A"
+                  class="ma-4 black--text fs-100"
+                  v-on:click="dialogScreen = 'login'; dialog = true"
+                  v-bind:style=" {fontSize: '20px'}"
+                >
+                  Sign In
+                  <v-icon right dark> mdi-account-plus-outline </v-icon>
+                </v-btn>
+              </div>
+            </template>
+            <template v-if="loggedIn && dialogScreen == 'main'">
+              <div class="text-center">
+                <v-btn
+                  color="#FFB17A"
+                  class="ma-4 black--text fs-100"
+                  v-on:click="logoutUser()"
+                  v-bind:style=" {fontSize: '20px'}"
+                >
+                  Logout
+                  <v-icon right dark> mdi-account-minus-outline </v-icon>
+                </v-btn>
+                <v-btn
+                color="#FFB17A"
+                class="ma-4 black--text fs-100"
+                v-on:click="setPage('admin'); getAllUsers(); getAllReviews()"
+                v-bind:style=" {fontSize: '20px'}"
+                v-show="currentUserObject.admin"
+              >
+                Admin
+                <v-icon right dark> mdi-shield-crown-outline </v-icon>
+              </v-btn>
+              </div>
+            </template>
+          </div>
+        </v-app-bar>
+
+        <v-main  class="grey lighten-3" style="padding:80px">
+          <v-container>
+            <v-row>
+              <v-col id="column" cols="2">
+                <v-sheet rounded="lg" class="overflow-y-auto" height="80vh">
+                  <v-list color="transparent">
+                    <v-list-item>
+                      <v-list-item-content>
+                        <v-list-item-title class="d-flex justify-space-between"> 
+                          <div>Overall Average</div>
+                          <div>
+                            <span class="actual_price"><b>${{ allStationsAverage }}</b></span>
+                          </div>
+                        </v-list-item-title>
+                      </v-list-item-content>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item v-if="currentUser != '' && currentUserObject.favorites.length > 0">
+                      <v-list-item-content>
+                        <v-list-item-title class="d-flex justify-space-between"> 
+                          <div><strong>Favorites</strong></div>
+                        </v-list-item-title>
+                      </v-list-item-content>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item 
+                    v-for="(favoriteStation, index) in currentUserObject.favorites" 
+                    :key="index + 387957438"
+                    @click="getSingleStation(favoriteStation.station_id), ssStationMarker();"
+                    @mouseenter="favHoverBounce(favoriteStation)"
+                    @mouseleave="stopBounce(favoriteStation)"  >
+                      <v-list-item-content>
+                        <v-list-item-title class="d-flex justify-space-between align-center"> 
+                            <div><v-icon color="#FFB17A">mdi-gas-station</v-icon>{{ favoriteStation.station_name }}<br>
+                               {{ favoriteStation.station_address }}
+                               <v-rating length="5" background-color="#ffb17a" color="#4f4789" readonly half-increments :value="ratingAverage(favoriteStation.station_reviews)"></v-rating>
+                              </div>
+                            <div class="actual_price"><b>${{ favoriteStation.station_prices[favoriteStation.station_prices.length - 1].price.toFixed(2) }}<v-icon right @click.stop="removeFavorite(favoriteStation.station_id), removeFavColor(favoriteStation.station_address)">mdi-star-remove-outline</v-icon></b></div>
+                        </v-list-item-title>
+                      </v-list-item-content>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item>
+                      <v-list-item-content>
+                        <v-list-item-title class="d-flex justify-space-between"> 
+                          <div><strong>Gas Stations</strong></div>
+                        </v-list-item-title>
+                      </v-list-item-content>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item
+                      v-for="(station, index) in allStations"
+                      :key="index"
+                      link
+                      v-if="guest"
+                      @click="getSingleStation(station._id), ssStationMarker()"
+                      @mouseenter = hoverBounce(station)
+                      @mouseleave = stopBounce(station)
+                    >
+                      <v-list-item-content>
+                        <v-list-item-title class="d-flex justify-space-between align-center">
+                          <div>
+                            <v-icon color="#FFB17A">mdi-gas-station</v-icon>{{ station.name }}<br>
+                            {{ station.address }}
+                            <v-rating length="5" background-color="#ffb17a" color="#4f4789" readonly half-increments :value="ratingAverage(station.reviews)"></v-rating>
+                          </div>
+                          <div>
+                            <span class="actual_price"><b>${{ getAllPrices(station) }}<v-icon v-if="guest === false" right @click.stop="addFavorite(station._id), setFavColor(station.address)">mdi-star-plus-outline</v-icon></b></span>
+                          </div>
+                        </v-list-item-title>
+                      </v-list-item-content>
+                    </v-list-item>
+                    <v-list-item
+                      v-for="(station, index) in allStations"
+                      :key="index + 10000000"
+                      link
+                      v-if="!guest && !isFavorite(station)"
+                      @click="getSingleStation(station._id), ssStationMarker()"
+                      @mouseenter = hoverBounce(station)
+                      @mouseleave = stopBounce(station)
+                    >
+                      <v-list-item-content>
+                        <v-list-item-title class="d-flex justify-space-between align-center">
+                          <div>
+                            <v-icon color="#FFB17A">mdi-gas-station</v-icon>{{ station.name }}<br>
+                            {{ station.address }}
+                            <v-rating length="5" background-color="#ffb17a" color="#4f4789" readonly half-increments :value="ratingAverage(station.reviews)"></v-rating>
+                          </div>
+                          <div>
+                            <span class="actual_price"><b>${{ getAllPrices(station) }}<v-icon v-if="guest === false" right @click.stop="addFavorite(station._id), setFavColor(station.address)">mdi-star-plus-outline</v-icon></b></span>
+                          </div>
+                        </v-list-item-title>
+                      </v-list-item-content>
+                    </v-list-item>
+                  </v-list>
+                </v-sheet>
+              </v-col>
+
+              <!-- MAP -->
+              <v-col>
+                <v-sheet min-height="100%" rounded="lg">
+                  <v-col>
+                    <v-sheet min-height="100%" rounded="lg">
+                      <v-main class="green lighten-5 pt-0">
+                        <v-container class="fill-height white">
+                          <v-row>
+                            <v-col>
+                              <v-sheet
+                                v-show="mapIsInitialized"
+                                height="600"
+                                id="map"
+                              ></v-sheet>
+                              <v-sheet
+                                v-show="!mapIsInitialized"
+                                class="transparent"
+                                height="600"
+                              >
+                                <v-card
+                                  class="fill-height"
+                                  loading="green lighten-2"
+                                >
+                                  <v-card-title>Loading Map</v-card-title>
+                                  <v-card-text>
+                                    If this is taking a long time, make sure
+                                    you've entered in your google api key in the
+                                    html script tag. It will not work until
+                                    you've provided one
+                                  </v-card-text>
+                                </v-card>
+                              </v-sheet>
+                            </v-col>
+                          </v-row>
+                        </v-container>
+                      </v-main>
+                    </v-sheet>
+                  </v-col>
+
+                  <template v-if="!loggedIn">
+                    <v-row justify="center">
+                      <v-dialog
+                        round
+                        v-model="dialog"
+                        persistent
+                        max-width="600px"
+                        class="my-auto"
+                      >
+                        <template v-slot:activator="{ on, attrs }"> </template>
+                        <!-- HOME DIALOG GOES HERE -->
+                        <!-- <div
+                          id="home_dialog"
+                          width="600px"
+                          v-if="dialogScreen == 'home'"
+                        > -->
+                        <div v-if="dialogScreen == 'home'">
+                          <v-sheet
+                            width="600px"
+                            rounded-lg
+                             >
+                            <v-app-bar 
+                            id="home_dialog"
+                            color="#4F4789">
+                              <h1>Welcome to Go Gas</h1>
+                            </v-app-bar>
+                            <template>
+                              <div class="text-center">
+                                <v-btn 
+                                  color="#FFB17A"
+                                  class="ma-4 black--text fs-100"
+                                  v-on:click="dialogScreen = 'login'"
+                                  v-bind:style=" {fontSize: '20px'}"
+                                >
+                                  Sign In
+                                  <v-icon right dark> mdi-login-variant </v-icon>
+                                </v-btn>
+                              </div>
+                            </template>
+
+                            <template>
+                              <div class="text-center">
+                                <v-btn
+                                  color="#FFB17A"
+                                  class="ma-4 black--text fs-100"
+                                  v-on:click="dialogScreen = 'register'"
+                                  v-bind:style=" {fontSize: '20px'}"
+                                >
+                                  Register
+                                  <v-icon right dark>
+                                    mdi-account-plus-outline
+                                  </v-icon>
+                                </v-btn>
+                              </div>
+                            </template>
+
+                            <template>
+                              <div class="text-center">
+                                <v-btn
+                                  color="#FFB17A"
+                                  class="ma-4 black--text fs-100"
+                                  v-on:click="dialog = false, guest = true, dialogScreen ='main'"
+                                  v-bind:style=" {fontSize: '20px'}"
+                                >
+                                  Continue as Guest
+                                  <v-icon right dark>
+                                    mdi-account-arrow-right-outline
+                                  </v-icon>
+                                </v-btn>
+                              </div>
+                            </template>
+                          </v-sheet>
+                        </div>
+                        <!-- REGISTER DIALOG GOES HERE -->
+                        <div
+                          v-if="dialogScreen == 'register'"
+                        >
+                        <v-sheet
+                        width="600px"
+                        rounded-lg>
+                        <v-app-bar 
+                        id="register_dialog"
+                        color = "#4F4789">
+                          <h1>Register</h1>
+                        </v-app-bar>
+                            <div class="col-12" sm="10" >
+                              <v-text-field
+                                prepend-icon="mdi-email"
+                                color="#FFB17A"
+                                id="register_username"
+                                label="Email"
+                                placeholder="johndoe@gmail.com"
+                                v-model="rUsername"
+                                class="input_style"
+                              ></v-text-field>
+                              <br />
+                              <v-text-field
+                                prepend-icon="mdi-account-circle"
+                                color="#FFB17A"
+                                id="register_name"
+                                label="Name"
+                                placeholder="John Doe"
+                                v-model="rName"
+                                class="input_style"
+                              ></v-text-field>
+                              <br />
+                              <v-text-field
+                                :append-icon="show ? 'mdi-eye': 'mdi-eye-off'"
+                                :rules="[(rPass === rConfirmPass) || 'Passwords Must Match!']"
+                                :type="show ? 'text' : 'password'"
+                                prepend-icon="mdi-lock"
+                                color="#FFB17A"
+                                id="register_pass"
+                                label="Password"
+                                v-model="rPass"
+                                class="input_style"
+                                counter
+                                @click:append="show = !show"
+                              ></v-text-field>
+                              <br />
+                              <v-text-field
+                                :append-icon="show1 ? 'mdi-eye': 'mdi-eye-off'"
+                                :rules="[(rPass === rConfirmPass) || 'Passwords Must Match!']"
+                                :type="show1 ? 'text' : 'password'"
+                                prepend-icon="mdi-lock-check"
+                                color="#FFB17A"
+                                id="register_confirmPass"
+                                label="Confirm Password"
+                                v-model="rConfirmPass"
+                                class="input_style"
+                                counter
+                                @click:append="show1 = !show1"
+                              ></v-text-field>
+                              <br />
+                              <v-text-field
+                              
+                                prepend-icon="mdi-map-marker-radius"
+                                color="#FFB17A"
+                                id="register_zip"
+                                label="ZIP"
+                                placeholder="12345"
+                                v-model="rZip"
+                                class="input_style"
+                                type="number"
+                                @keyup.enter="registerUser()"
+                              /></v-text-field>
+                              <v-row class="mb-4">
+                                <v-col class="col-12" sm="6">
+                                  <template>
+                                    <div class="text-center">
+                                      <v-btn
+                                        color="#FFB17A"
+                                        class="ma-4 black--text fs-100"
+                                        v-on:click="registerUser()"
+                                        v-bind:style=" {fontSize: '20px'}"
+                                      >
+                                        Register
+                                        <v-icon right dark>
+                                          mdi-account-plus-outline
+                                        </v-icon>
+                                      </v-btn>
+                                    </div>
+                                  </template>
+                                </v-col>
+                                <v-col class="col-12" sm="6">
+                                  <template>
+                                    <div class="text-center">
+                                      <v-btn
+                                        color="#FFB17A"
+                                        class="ma-4 black--text fs-100"
+                                        v-on:click="dialogScreen = 'home', reloadMap(), console.log('back clicked')"
+                                        v-bind:style=" {fontSize: '20px'}"
+                                      >
+                                        Back
+                                        <v-icon right dark>
+                                          mdi-keyboard-backspace
+                                        </v-icon>
+                                      </v-btn>
+                                    </div>
+                                  </template>
+                                </v-col>
+                              </v-row>
+                            <v-sheet>
+                          </div>
+                          <!-- snackbar goes here -->
+                          <v-snackbar
+                            shaped
+                            centered
+                            timeout="2000"
+                            v-model="errorOccurred"
+                            color="#4f4789"
+                            text-color="#ffb17a"
+                          >
+                            {{ errorMessage }}
+
+                            <template v-slot:action="{ attrs }">
+                              <v-btn
+                                color="#ffb17a"
+                                text
+                                v-bind="attrs"
+                                @click="errorOccurred = false"
+                              >
+                                Close
+                              </v-btn>
+                            </template>
+                          </v-snackbar>
+                        </div>
+                        <!-- SIGN IN PAGE -->
+                        <div v-if="dialogScreen == 'login'">
+                        <v-sheet 
+                        width="600px"
+                        rounded-lg>
+                          <v-app-bar 
+                          id="login_dialog"
+                          color="#4F4789">
+                            <h1>Login</h1>
+                          </v-app-bar>
+                          <div class="col-12" sm="6">
+                            <v-text-field
+                                prepend-icon="mdi-email"
+                                color="#FFB17A"
+                                id="login_username"
+                                label="Email"
+                                placeholder="johndoe@gmail.com"
+                                v-model="lUsername"
+                                class="input_style"
+                            ></v-text-field>
+                            <br />
+                            <v-text-field
+                                :append-icon="show ? 'mdi-eye': 'mdi-eye-off'"
+                                :type="show ? 'text' : 'password'"
+                                prepend-icon="mdi-lock"
+                                color="#FFB17A"
+                                id="login_pass"
+                                label="Password"
+                                v-model="lPassword"
+                                class="input_style"
+                                counter
+                                @click:append="show = !show"
+                                @keyup.enter="loginUser()"
+                            ></v-text-field>
+                            <br />
+
+                            <v-row class="mb-4">
+                              <v-col class="col-12" sm="6">
+                                <template>
+                                  <div class="text-center">
+                                    <v-btn
+                                      color="#FFB17A"
+                                      class="ma-4 black--text fs-100"
+                                      v-on:click="loginUser()"
+                                      v-bind:style=" {fontSize: '20px'}"
+                                    >
+                                      Sign In
+                                      <v-icon right dark>
+                                        mdi-login-variant
+                                      </v-icon>
+                                    </v-btn>
+                                  </div>
+                                </template>
+                              </v-col>
+                              <v-col class="col-12" sm="6">
+                                <template>
+                                  <div class="text-center">
+                                    <v-btn
+                                      color="#FFB17A"
+                                      class="ma-4 black--text fs-100"
+                                      v-on:click="dialogScreen = 'home'"
+                                      v-bind:style=" {fontSize: '20px'}"
+                                    >
+                                      Back
+                                      <v-icon right dark>
+                                        mdi-keyboard-backspace
+                                      </v-icon>
+                                    </v-btn>
+                                  </div>
+                                </template>
+                              </v-col>
+                            </v-row>
+                        </v-sheet>
+                        </div>
+                          <!-- LOGIN SNACKBAR AFTER CREATING USER -->
+                          <v-snackbar
+                            timeout="2000"
+                            shaped
+                            centered
+                            color="blue-grey"
+                            v-model="successfullyCreated"
+                          >
+                            {{ successMessage }}
+
+                            <template v-slot:action="{ attrs }">
+                              <v-btn
+                                color="pink"
+                                text
+                                v-bind="attrs"
+                                @click="successfullyCreated = false"
+                              >
+                                Close
+                              </v-btn>
+                            </template>
+                          </v-snackbar>
+                          <v-snackbar
+                            shaped
+                            centered
+                            timeout="2000"
+                            v-model="errorOccurred"
+                            color="#4f4789"
+                            text-color="#ffb17a"
+                          >
+                            {{ errorMessage }}
+
+                            <template v-slot:action="{ attrs }">
+                              <v-btn
+                                color="#ffb17a"
+                                text
+                                v-bind="attrs"
+                                @click="errorOccurred = false"
+                              >
+                                Close
+                              </v-btn>
+                            </template>
+                          </v-snackbar>
+                        </div>
+                        </div>
+                      </v-dialog>
+                    </v-row>
+                  </template>
+                </v-sheet>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-main>
+      </v-app>
+
+      <!-- SINGLE STATION PAGE -->
+      <v-app id="inspire" v-show="page == 'station'">
+        <v-app-bar app color="#4F4789" flat elevation="4">
+          <div>
+            <img v-on:href @click="setPage('main'); currentStationPrices = []" src="./images/gogaslogo.svg" alt="Go Gas Logo" width="175px" />
+          </div>
+          <v-row v-if="guest == false" class="text-center justify-center mr-15">
+            <h2 class="white--text">Welcome, &nbsp {{ userName }}</h2>
+          </v-row>
+          <div class="nav_buttons">
+            <template v-if="guest == true && dialogScreen == 'main'">
+              <div class="text-center">
+                <v-btn
+                  color="#FFB17A"
+                  class="ma-4 black--text fs-100"
+                  v-on:click="setPage('main'); dialogScreen = 'register'; dialog = true; currentStationPrices = []"
+                  v-bind:style=" {fontSize: '20px'}"
+                >
+                  Register
+                  <v-icon right dark> mdi-login-variant </v-icon>
+                </v-btn>
+              </div>
+            </template>
+            <template v-if="guest == true && dialogScreen == 'main'">
+              <div class="text-center">
+                <v-btn
+                  color="#FFB17A"
+                  class="ma-4 black--text fs-100"
+                  v-on:click="setPage('main'); dialogScreen = 'login'; dialog = true; currentStationPrices = []"
+                  v-bind:style=" {fontSize: '20px'}"
+                >
+                  Sign In
+                  <v-icon right dark> mdi-account-plus-outline </v-icon>
+                </v-btn>
+              </div>
+            </template>
+            <template v-if="guest == false && dialogScreen == 'main'">
+              <div class="text-center">
+                <v-btn
+                  color="#FFB17A"
+                  class="ma-4 black--text fs-100"
+                  v-on:click="logoutUser()"
+                  v-bind:style=" {fontSize: '20px'}"
+                >
+                  Logout
+                  <v-icon right dark> mdi-account-minus-outline </v-icon>
+                </v-btn>
+              </div>
+            </template>
+          </div>
+        </v-app-bar>
+
+        <!-- Left column -->
+        <v-main class="grey lighten-3" style="padding: 80px">
+          <v-container>
+            <v-row>
+              <v-col id="column" cols="2">
+                <v-sheet
+                  rounded="lg"
+                  width="45vw"
+                  height="88vh"
+                  class="overflow-y-auto"
+                >
+                  <v-list color="transparent" v-if="page == 'station'">
+                    <v-list-item>
+                      <v-list-item-content>
+                        <v-list-item-title class="text-center mb-8">
+                          <div class="d-flex justify-space-around align-center">
+                            <template>
+                              <div class="text-center">
+                                <v-tooltip left>
+                                  <template v-slot:activator="{ on, attrs }">
+                                    <v-btn
+                                      class="mx-2"
+                                      fab
+                                      dark
+                                      large
+                                      color="#FFB17A"
+                                      v-bind="attrs"
+                                      v-on="on"
+                                      @click="setPage('main'), resetMarker(); currentStationPrices = []"
+                                    >
+                                      <v-icon dark color="black">
+                                        mdi-keyboard-backspace
+                                      </v-icon>
+                                    </v-btn>
+                                  </template>
+                                  <span>Back to main page</span>
+                                </v-tooltip>
+                              </div>
+                            </template>
+                            <div>
+                              <h1>{{ currentStation.name }}</h1>
+                              <h3>{{ currentStation.address }}</h3>
+                              <h4><i>{{ currentStation.pumpHours }}</i></h4>
+                            </div>
+                            <template>
+                              <div class="text-center">
+                                <v-tooltip right>
+                                  <template v-slot:activator="{ on, attrs }">
+                                    <v-avatar v-if="currentStation.name == 'Shell'"
+                                      size="48"
+                                    >
+                                      <img 
+                                      src="./images/shell.png"
+                                      alt="shell logo"
+                                      width="100%">
+
+                                    </v-avatar>
+                                    <v-avatar v-if="currentStation.name == 'Sinclair'"
+                                      size="48"
+                                    >
+                                      <img 
+                                      src="./images/sinclair.png"
+                                      alt="sinclair logo"
+                                      width="100%">
+
+                                    </v-avatar>
+                                    <v-avatar v-if="currentStation.name == 'Chevron'"
+                                      size="48"
+                                    >
+                                      <img 
+                                      src="./images/chevron.jpg"
+                                      alt="chevron logo"
+                                      width="100%">
+
+                                    </v-avatar>
+                                    <v-avatar v-if="currentStation.name == 'Texaco St. George'" 
+                                      size="48"
+                                    >
+                                      <img 
+                                      src="./images/texaco.png"
+                                      alt="texaco logo"
+                                      width="100%">
+
+                                    </v-avatar>
+                                    <v-avatar v-if="currentStation.name == `Maverik Adventure's First Stop`" 
+                                      size="48"
+                                    >
+                                      <img 
+                                      src="./images/maverick.jpg"
+                                      alt="maverick logo"
+                                      width="100%">
+
+                                    </v-avatar> 
+                                    <v-avatar v-if="currentStation.name == `Harmon's Fuel Stop`"  
+                                      size="48"
+                                    >
+                                      <img 
+                                      src="./images/harmons.jpg"
+                                      alt="harmons logo"
+                                      width="100%">
+
+                                    </v-avatar>
+
+                                    <v-avatar v-if="currentStation.name == 'Thomas Petroleum'"
+                                      size="48"
+                                    >
+                                      <img 
+                                      src="./images/thomas.png"
+                                      alt="thomas logo"
+                                      width="100%">
+
+                                    </v-avatar> 
+                                  </template>
+                                  <span>Post updated price</span>
+                                </v-tooltip>
+                              </div>
+                            </template>
+                          </div>
+                        </v-list-item-title>
+                        <v-list-item id="recent_price">
+                          <p>CURRENT PRICE: <span class="actual_price"><b>${{ currentStation.prices[currentStation.prices.length - 1].price.toFixed(2) }}</b></span></p>
+                        </v-list-item>
+                        <v-list-item id="recent_price_user" class="mb-4">
+                          <p><i>Current price posted by: <span class="actual_price">{{ currentStation.prices[currentStation.prices.length - 1].user.name }}</span></i></p>
+                        </v-list-item>
+                        <v-list-item>
+                          <div class="d-flex align-center mx-auto">
+                            <template>
+                              <v-form v-show="guest === false">
+                                <v-container>
+                                  <v-row>
+                                    <v-col
+                                      cols="12"
+                                      sm="12"
+                                    >
+                                      <v-text-field
+                                        label="Enter new price"
+                                        color="#FFB17A"
+                                        v-model="newCurrentPrice"
+                                        type="number"
+                                      ></v-text-field>
+                                    </v-col>
+                                  </v-row>
+                                </v-container>
+                              </v-form>
+                            </template>
+                            <v-btn
+                            color="#FFB17A"
+                            class="ma-4 black--text fs-100"
+                            @click="currentStationPrices = []; postPrice(currentStation._id); currentStationDialog = false; currentStationPricesCheck()"
+                            v-bind:style=" {fontSize: '15px'}"
+                            v-show="guest === false"
+                            >
+                                Post Updated Price
+                              <v-icon right dark> mdi-currency-usd </v-icon>
+                            </v-btn>
+                          </div>
+                        </v-list-item>
+                        <template>
+                          <v-card
+                            class="mx-auto text-center"
+                            color="#4F4789"
+                            dark
+                            max-width="50vw"
+                          >
+                            <v-card-text>
+                              <v-sheet color="#4F4789">
+                                <v-sparkline
+                                  :value="currentStationPrices"
+                                  color="#FFB17A"
+                                  height="100"
+                                  padding="12"
+                                  stroke-linecap="round"
+                                  smooth
+                                  auto-draw
+                                  :auto-draw-duration="4000"
+                                  :gradient="sparklineGradient"
+                                >
+                                  <template v-slot:label="item">
+                                    ${{ item.value }}
+                                  </template>
+                                </v-sparkline>
+                              </v-sheet>
+                            </v-card-text>
+
+                            <v-divider></v-divider>
+                          </v-card>
+                        </template>
+                        <h1 class="d-flex justify-space-around mt-8">
+                          Reviews
+                        </h1>
+                        <div class="d-flex justify-center align-center text-center mt-4 mb-4 text-h6">
+                          <span>Overall Rating: <v-rating length="5" size="50" background-color="#ffb17a" color="#4f4789" readonly half-increments :value="stationRatingAverage(currentStation)"></v-rating></span>
+                        </div>
+                        <template>
+                          <v-card
+                            class="mx-auto mt-8"
+                            min-width="40vw"
+                            v-for="(review, index) in currentStation.reviews"
+                            :key="index"
+                          >
+                            <v-card-title
+                              class="d-flex align-center justify-space-between"
+                            >
+                              <p id="review_username">{{ review.user.name }}</p>
+                              <div class="text-center">
+                                <v-rating
+                                  v-model="review.rating"
+                                  background-color="orange lighten-3"
+                                  color="#FFB17A"
+                                  large
+                                  readonly
+                                ></v-rating>
+                              </div>
+                            </v-card-title>
+                            <v-card-text>
+                              <p id="review_comment">{{ review.comment }}</p>
+                            </v-card-text>
+                            <v-card-actions class="d-flex justify-space-between align-center">
+                              <v-btn v-if="guest === false && currentUserObject.name === review.user.name" 
+                              class="mx-2 black--text"
+                              dark
+                              large
+                              color="#FFB17A"
+                              @click="deleteReview(currentStation._id, review._id)"> 
+                              Delete </v-btn>
+                              <span><b>Posted on: </b>{{ review.createdAt.split('T')[0] }}</span>
+                            </v-card-actions>
+                          </v-card>
+                        </template>
+                        <template>
+                          <v-row justify="center">
+                            <v-dialog
+                              v-model="currentStationDialog"
+                              persistent
+                              max-width="600px"
+                            >
+                              <v-card>
+                                <v-card-title>
+                                  <span class="text-h5" id="current_station_dialog_header">Post update price for {{ currentStation.name }} {{ currentStation.address}}</span>
+                                </v-card-title>
+                                <v-card-text>
+                                  <v-container>
+                                    <v-row>
+                                      <v-col
+                                        cols="12"
+                                        sm="6"
+                                        md="4"
+                                      >
+                                        <v-text-field
+                                          label="Enter current price"
+                                          required
+                                          v-model="newCurrentPrice"
+                                        ></v-text-field>
+                                      </v-col>
+                                      <v-col
+                                        cols="12"
+                                        sm="6"
+                                        md="4"
+                                      >
+
+                                    </v-row>
+                                  </v-container>
+                                </v-card-text>
+                                <v-card-actions>
+                                  <v-btn
+                                  class="mx-2 black--text"
+                                  dark
+                                  large
+                                  color="#FFB17A"
+                                  @click="currentStationDialog = false"
+                                >
+                                  Back
+                                </v-btn>
+                                  <v-spacer></v-spacer>
+
+                                  <v-btn
+                                  class="mx-2 black--text"
+                                  dark
+                                  large
+                                  color="#FFB17A"
+                                  @click="currentStationPrices = []; postPrice(currentStation._id); currentStationDialog = false; currentStationPricesCheck()"
+                                >
+                                  Post new price
+                                </v-btn>
+                                </v-card-actions>
+                              </v-card>
+                            </v-dialog>
+                          </v-row>
+                        </template>
+                      </v-list-item-content>
+                    </v-list-item>
+                  </v-list>
+                </v-sheet>
+              </v-col>
+
+              <!-- SINGLE STATION MAP -->
+              <v-col>
+                <v-sheet git rounded="lg" class="mb-4" max-width="50vw">
+                  
+                <v-sheet
+                  min-height="43vh"
+                  rounded="lg"
+                  class="mb-4"
+                  max-width="50vw"
+                ><v-col>
+                  <v-sheet min-height="100%" rounded="lg" >
+                    <v-col>
+                      <v-sheet min-height="100%" rounded="lg">
+                        <v-main class="green lighten-5 pt-0">
+                          <v-container >
+                            <v-container>
+                              <v-row>
+                                  <v-col>
+                                      <v-sheet v-show="mapIsInitialized" height="300px" id="ssmap"></v-sheet>
+                                      <v-sheet v-show="!mapIsInitialized" class="transparent" height="300">
+                                          <v-card class="fill-height" loading="green lighten-2">
+                                              <v-card-title>Loading Map</v-card-title>
+                                              <v-card-text>
+                                                  If this is taking a long time, make sure you've
+                                                  entered in your google api key in the html script tag. It
+                                                  will not work until you've provided one
+                                              </v-card-text>
+                                          </v-card>
+                                      </v-sheet>
+                                  </v-col>
+                              </v-row>
+                          </v-container>
+                        </v-main>
+                      </v-sheet>
+                    </v-col>
+                  <!-- -->
+                </v-sheet>
+                <v-sheet
+                  min-height="43vh"
+                  rounded="lg"
+                  class="mt-4"
+                  max-width="50vw"
+                >
+                  <template>
+                    <v-card class="mx-auto" height="43vh" elevation="0" :disabled="guest === true">
+                      <v-card-title>Leave a Review</v-card-title>
+                      <v-card-text>
+                        <span
+                          ><b>{{ currentStation.name }}</b>
+                          <i>{{ currentStation.address }}</i></span
+                        >
+                        <template>
+                          <div class="text-center">
+                            <v-rating
+                              v-model="rating"
+                              background-color="orange lighten-3"
+                              color="#FFB17A"
+                              large
+                            ></v-rating>
+                          </div>
+                        </template>
+                        <v-text-field
+                          label="Enter a comment..."
+                          v-model="comment"
+                          @keyup.enter="postReview(currentStation._id);"
+                        >
+                        </v-text-field>
+                      </v-card-text>
+                      <v-card-actions>
+                        <v-btn
+                          text
+                          color="#FFB17A"
+                          @click="postReview(currentStation._id)"
+                        >
+                          Submit Review
+                        </v-btn>
+                      </v-card-actions>
+                    </v-card>
+                  </template>
+                </v-sheet>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-main>
+      </v-app>
+
+      <!-- ADMIN PAGE -->
+      <v-app id="inspire" v-show="page == 'admin'">
+        <v-app-bar app color="#4F4789" flat elevation="4">
+          <div id="main_header">
+            <img
+              v-on:click="page = 'main'"
+              src="./images/gogaslogo.svg"
+              alt="Go Gas Logo"
+              width="175px"
+            />
+          </div>
+          <v-row v-if="guest == false" class="text-center justify-center mr-15">
+            <h2 class="white--text">Welcome, &nbsp {{ userName }}</h2>
+          </v-row>
+          <div class="nav_buttons">
+            <template v-if="loggedIn && dialogScreen == 'main'">
+              <div class="text-center">
+                <v-btn
+                  color="#FFB17A"
+                  class="ma-4 black--text fs-100"
+                  v-on:click="logoutUser()"
+                  v-bind:style=" {fontSize: '20px'}"
+                >
+                  Logout
+                  <v-icon right dark> mdi-account-minus-outline </v-icon>
+                </v-btn>
+                <v-btn
+                color="#FFB17A"
+                class="ma-4 black--text fs-100"
+                v-on:click="setPage('main')"
+                v-bind:style=" {fontSize: '20px'}"
+                v-show="currentUserObject.admin"
+              >
+                Back to Home
+                <v-icon right dark> mdi-keyboard-backspace </v-icon>
+              </v-btn>
+              </div>
+            </template>
+          </div>
+        </v-app-bar>
+        <v-main class="grey lighten-3" style="padding:80px">
+          <v-container>
+            <v-row>
+              <v-col
+                cols="12"
+                sm="4"
+              >
+                <v-sheet
+                max-height="70vh"
+                rounded="lg"
+                class="overflow-y-auto"
+                >
+                  <!--  -->
+                  <v-list color="transparent">
+                    <v-list-item>
+                      <v-list-item-content>
+                        <v-list-item-title class="d-flex justify-space-between"> 
+                          <div><strong>Users</strong></div>
+                        </v-list-item-title>
+                      </v-list-item-content>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item                       
+                    v-for="(user, index) in allUsers"
+                    :key="index"
+                    >
+                      <v-list-item-content>
+                        <v-list-item-title class="d-flex justify-space-between align-center">
+                          <div>
+                            <b>Email: </b>{{ user.username }}<br>
+                            <b>Username: </b>{{ user.name }}<br>
+                            <b>User ID: </b>{{ user._id }}<br>
+                            <b>Admin: </b>{{ user.admin }}<br>
+                          </div>
+                          <div class="d-flex flex-column">
+                            <span class="pb-2"><b><v-icon v-if="guest === false" right @click.stop="deleteUser(user._id)">mdi-trash-can-outline</v-icon></b></span>
+                            <span class="pb-2"><b><v-icon v-if="guest === false" right @click.stop="removeAdmin(user._id)">mdi-shield-remove</v-icon></b></span>
+                            <span><b><v-icon v-if="guest === false" right @click.stop="giveAdmin(user._id)">mdi-shield-plus</v-icon></b></span>
+                          </div>
+                        </v-list-item-title>
+                      </v-list-item-content>
+                    </v-list-item>
+                  </v-list>
+                </v-sheet>
+              </v-col>
+    
+              <v-col
+                cols="12"
+                sm="4"
+              >
+                <v-sheet
+                  max-height="70vh"
+                  rounded="lg"
+                  class="overflow-y-auto"
+                >
+                  <!--  -->
+                  <v-list color="transparent">
+                    <v-list-item>
+                      <v-list-item-content>
+                        <v-list-item-title class="d-flex justify-space-between align-center"> 
+                          <div><strong>Gas Stations</strong></div>
+                        </v-list-item-title>
+                      </v-list-item-content>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item
+                      v-for="(station, index) in allStations"
+                      :key="index"
+                      link
+                      @click="getSingleStation(station._id)"
+                    >
+                      <v-list-item-content>
+                        <v-list-item-title class="d-flex justify-space-between align-center">
+                          <div>
+                            {{ station.name }}<br>
+                            {{ station.address }}
+                          </div>
+                          <div>
+                            <span class="actual_price"><b>${{ getAllPrices(station) }}<v-icon v-if="guest === false" right @click.stop="deleteStation(station._id)">mdi-trash-can-outline</v-icon></b></span>
+                          </div>
+                        </v-list-item-title>
+                      </v-list-item-content>
+                    </v-list-item>
+                  </v-list>
+                </v-sheet>
+              </v-col>
+    
+              <v-col
+                cols="12"
+                sm="4"
+              >
+                <v-sheet
+                max-height="70vh"
+                rounded="lg"
+                class="overflow-y-auto"
+                >
+                  <!--  -->
+                  <v-list color="transparent">
+                    <v-list-item>
+                      <v-list-item-content>
+                        <v-list-item-title class="d-flex justify-space-between"> 
+                          <div><strong>Reviews</strong></div>
+                        </v-list-item-title>
+                      </v-list-item-content>
+                    </v-list-item>
+                    <v-divider></v-divider>
+                    <v-list-item                       
+                    v-for="(review, index) in allReviews"
+                    :key="index"
+                    >
+                      <v-list-item-content>
+                        <v-list-item-title class="d-flex justify-space-between align-center">
+                          <div :style="{width: '20px'}">
+                            <b>Poster ID: </b>{{ review.userid }}<br>
+                            <b>Station: </b>{{ review.station_name }}<br>
+                            <b>Rating: </b>{{ review.rating }}<br>
+                            <b>Comment: </b>{{ review.comment }}<br>
+                          </div>
+                          <div>
+                            <span><b><v-icon v-if="guest === false" right @click.stop="">mdi-trash-can-outline</v-icon></b></span>
+                          </div>
+                        </v-list-item-title>
+                      </v-list-item-content>
+                    </v-list-item>
+                  </v-list>
+                </v-sheet>
+              </v-col>
+            </v-row>
+          </v-container>
+        </v-main>
+      </v-app>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/vue@2/dist/vue.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vuetify@2.x/dist/vuetify.js"></script>
+    <script src="app.js"></script>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAvSzePow7KVU-UkzfH9ivuq8lNuzt6aWM&callback=initMap&v=weekly"
+      defer
+    ></script>
+  </body>
+</html>
