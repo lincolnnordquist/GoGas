@@ -31,10 +31,3 @@
 - User sessions are managed with `express-session`.
 
 ---
-
-## 📦 Setup Instructions
-
-1. **Clone the repository:**
-   ```bash
-   git clone https://github.com/your-username/go-gas.git
-   cd go-gas
